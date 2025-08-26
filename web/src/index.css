@@ -1,0 +1,342 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Colorful UX Theme - Design System */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply text-gray-800 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+
+  h1 {
+    @apply text-3xl md:text-4xl;
+    background: linear-gradient(to right, #9333ea, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl;
+    background: linear-gradient(to right, #4f46e5, #9333ea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl;
+    background: linear-gradient(to right, #3b82f6, #4f46e5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@layer components {
+  /* Colorful Button System */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 border text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-primary {
+    @apply btn border-transparent text-white shadow-lg hover:shadow-xl;
+    background: linear-gradient(to right, #9333ea, #ec4899);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(to right, #7c3aed, #db2777);
+  }
+
+  .btn-secondary {
+    @apply btn border-2 border-blue-200 text-blue-700 bg-white hover:bg-blue-50 hover:border-blue-300 focus:ring-blue-500 shadow-md hover:shadow-lg;
+  }
+
+  .btn-danger {
+    @apply btn border-transparent text-white shadow-lg hover:shadow-xl;
+    background: linear-gradient(to right, #ef4444, #ec4899);
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(to right, #dc2626, #db2777);
+  }
+
+  .btn-success {
+    @apply btn border-transparent text-white shadow-lg hover:shadow-xl;
+    background: linear-gradient(to right, #10b981, #14b8a6);
+  }
+
+  .btn-success:hover {
+    background: linear-gradient(to right, #059669, #0d9488);
+  }
+
+  .btn-warning {
+    @apply btn border-transparent text-white shadow-lg hover:shadow-xl;
+    background: linear-gradient(to right, #f59e0b, #f97316);
+  }
+
+  .btn-warning:hover {
+    background: linear-gradient(to right, #d97706, #ea580c);
+  }
+
+  /* Colorful Form System */
+  .form-input {
+    @apply w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80;
+  }
+
+  .form-select {
+    @apply form-input;
+  }
+
+  .form-label {
+    @apply block text-sm font-semibold text-gray-700 mb-2;
+  }
+
+  /* Colorful Card System */
+  .card {
+    @apply bg-white/90 rounded-2xl shadow-lg border border-white/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-blue-100 rounded-t-2xl;
+    background: linear-gradient(to right, #eff6ff, #faf5ff);
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  .card-gradient {
+    @apply card;
+    background: linear-gradient(135deg, #ffffff, #eff6ff, #faf5ff);
+  }
+
+  /* Colorful Navigation */
+  .nav-link {
+    @apply flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300;
+  }
+
+  .nav-link-active {
+    @apply nav-link text-white shadow-lg;
+    background: linear-gradient(to right, #9333ea, #ec4899);
+  }
+
+  .nav-link-inactive {
+    @apply nav-link text-gray-600 hover:text-gray-900;
+  }
+
+  .nav-link-inactive:hover {
+    background: linear-gradient(to right, #eff6ff, #faf5ff);
+  }
+
+  /* Colorful Status Indicators */
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold;
+  }
+
+  .status-success {
+    @apply status-badge text-green-800 border border-green-200;
+    background: linear-gradient(to right, #d1fae5, #ccfbf1);
+  }
+
+  .status-warning {
+    @apply status-badge text-yellow-800 border border-yellow-200;
+    background: linear-gradient(to right, #fef3c7, #fed7aa);
+  }
+
+  .status-error {
+    @apply status-badge text-red-800 border border-red-200;
+    background: linear-gradient(to right, #fee2e2, #fce7f3);
+  }
+
+  .status-info {
+    @apply status-badge text-blue-800 border border-blue-200;
+    background: linear-gradient(to right, #dbeafe, #e0e7ff);
+  }
+
+  /* Colorful Loading States */
+  .loading-spinner {
+    @apply animate-spin rounded-full border-4 border-blue-200;
+    border-top-color: #9333ea;
+  }
+
+  /* Enhanced Animations */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .bounce-in {
+    animation: bounceIn 0.6s ease-out;
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bounceIn {
+    0% { 
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% { 
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    70% { 
+      transform: scale(0.9);
+    }
+    100% { 
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulseGlow {
+    from {
+      box-shadow: 0 0 20px rgba(147, 51, 234, 0.3);
+    }
+    to {
+      box-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+    }
+  }
+
+  /* Colorful Responsive Grid */
+  .responsive-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+  }
+
+  /* Enhanced Focus States */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-4 focus:ring-purple-500/20 focus:ring-offset-2;
+  }
+
+  /* Colorful Hover Effects */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-xl;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg;
+  }
+
+  /* Colorful Gradients */
+  .gradient-bg {
+    background: linear-gradient(135deg, #4f46e5, #9333ea, #ec4899);
+  }
+
+  .gradient-text {
+    background: linear-gradient(to right, #9333ea, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #9333ea #e0e7ff;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #e0e7ff;
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #9333ea, #ec4899);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #7c3aed, #db2777);
+  }
+
+  /* Colorful Icons */
+  .icon-gradient {
+    background: linear-gradient(to right, #9333ea, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Colorful Dividers */
+  .divider {
+    @apply h-px;
+    background: linear-gradient(to right, transparent, #a5b4fc, transparent);
+  }
+
+  /* Colorful Progress Bars */
+  .progress-bar {
+    @apply w-full bg-blue-100 rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full transition-all duration-500;
+    background: linear-gradient(to right, #9333ea, #ec4899);
+  }
+
+  /* Colorful Tooltips */
+  .tooltip {
+    @apply absolute z-10 px-3 py-2 text-sm text-white rounded-lg shadow-lg opacity-0 invisible transition-all duration-300;
+    background: linear-gradient(to right, #374151, #1f2937);
+  }
+
+  .tooltip::after {
+    content: '';
+    @apply absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent;
+    border-top-color: #374151;
+  }
+
+  .tooltip:hover {
+    @apply opacity-100 visible;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .dark-mode {
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
