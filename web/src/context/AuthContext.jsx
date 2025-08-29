@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   const login = async (username, password) => {
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:8000/api/auth/token/', { username, password });
+      const res = await axios.post('/api/auth/token/', { username, password });
       localStorage.setItem('accessToken', res.data.access);
       setAccessToken(res.data.access);
       setUser({ username });

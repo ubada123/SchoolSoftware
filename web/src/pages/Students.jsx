@@ -1,30 +1,21 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client.js';
 import Papa from 'papaparse';
 import { 
   Users, 
-  Plus, 
   Download, 
   Upload, 
   Search, 
-  Filter,
-  UserPlus,
-  FileText,
   Calendar,
-  Hash,
   GraduationCap,
   Mail,
   Phone,
-  MapPin
+  UserPlus,
 } from 'lucide-react';
 
 export default function Students() {
   const [students, setStudents] = useState([]);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [dob, setDob] = useState('');
-  const [roll, setRoll] = useState('');
-  const [classroomId, setClassroomId] = useState('');
   const [classrooms, setClassrooms] = useState([]);
 
   const [importing, setImporting] = useState(false);
@@ -36,19 +27,6 @@ export default function Students() {
     api.get('/students/').then(r => setStudents(r.data));
     api.get('/classrooms/').then(r => setClassrooms(r.data));
   }, []);
-
-  const createStudent = async (e) => {
-    e.preventDefault();
-    const res = await api.post('/students/', {
-      first_name: firstName,
-      last_name: lastName,
-      date_of_birth: dob,
-      roll_number: roll,
-      classroom: classroomId ? Number(classroomId) : null,
-    });
-    setStudents([res.data, ...students]);
-    setFirstName(''); setLastName(''); setDob(''); setRoll(''); setClassroomId('');
-  };
 
   const findOrCreateClassroom = async (name, section) => {
     name = String(name || '').trim();
@@ -138,6 +116,9 @@ export default function Students() {
           </p>
         </div>
         <div className="flex items-center space-x-3">
+          <Link to="/students/new" className="btn-primary">
+            <UserPlus className="h-4 w-4 mr-2" /> Add Student
+          </Link>
           <button
             onClick={exportCsv}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -161,84 +142,6 @@ export default function Students() {
           </div>
         </div>
       )}
-
-      {/* Create Student Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
-            <UserPlus className="h-5 w-5 mr-2 text-blue-600" />
-            Add New Student
-          </h3>
-        </div>
-        <form onSubmit={createStudent} className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input 
-                placeholder="First name" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                value={firstName} 
-                onChange={e=>setFirstName(e.target.value)} 
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input 
-                placeholder="Last name" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                value={lastName} 
-                onChange={e=>setLastName(e.target.value)} 
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-              <input 
-                type="date" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                value={dob} 
-                onChange={e=>setDob(e.target.value)} 
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
-              <input 
-                placeholder="Roll number" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                value={roll} 
-                onChange={e=>setRoll(e.target.value)} 
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                value={classroomId} 
-                onChange={e=>setClassroomId(e.target.value)}
-              >
-                <option value="">Select class</option>
-                {classrooms.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}{c.section ? ` - ${c.section}` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="mt-4">
-            <button 
-              type="submit" 
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Student
-            </button>
-          </div>
-        </form>
-      </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -274,61 +177,52 @@ export default function Students() {
         </div>
       </div>
 
-      {/* Students Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredStudents.map(s => (
-          <div key={s.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center">
-                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-lg font-semibold text-gray-900">
+      {/* Students Table */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DOB</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredStudents.map((s) => (
+                <tr key={s.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {s.first_name} {s.last_name}
-                  </h3>
-                  <p className="text-sm text-gray-500">Roll #{s.roll_number}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                {new Date(s.date_of_birth).toLocaleDateString()}
-              </div>
-              {s.classroom_detail && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <GraduationCap className="h-4 w-4 mr-2 text-gray-400" />
-                  {s.classroom_detail.name}{s.classroom_detail.section ? ` - ${s.classroom_detail.section}` : ''}
-                </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{s.roll_number}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {new Date(s.date_of_birth).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {s.classroom_detail ? (
+                      <span>{s.classroom_detail.name}{s.classroom_detail.section ? ` - ${s.classroom_detail.section}` : ''}</span>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{s.contact_email || '—'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{s.contact_phone || '—'}</td>
+                </tr>
+              ))}
+              {filteredStudents.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-6 py-10 text-center text-sm text-gray-500">
+                    No students found. Try adjusting search or filters.
+                  </td>
+                </tr>
               )}
-              {s.contact_email && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                  {s.contact_email}
-                </div>
-              )}
-              {s.contact_phone && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                  {s.contact_phone}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredStudents.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No students found</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {searchTerm || filterClass ? 'Try adjusting your search or filters.' : 'Get started by adding a new student.'}
-          </p>
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 }

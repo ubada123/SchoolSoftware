@@ -1,9 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
-import { GraduationCap, Users, BookOpen, LogOut, Sparkles } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, LogOut, Sparkles, LayoutDashboard, UserPlus, BarChart3, CreditCard } from 'lucide-react';
 import Login from './pages/Login.jsx';
 import Students from './pages/Students.jsx';
 import Grades from './pages/Grades.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import AddStudent from './pages/AddStudent.jsx';
+import Reports from './pages/Reports.jsx';
+import Fees from './pages/Fees.jsx';
 
 function RequireAuth({ children }) {
   const { accessToken } = useAuth();
@@ -16,8 +20,12 @@ function Navigation() {
   const { logout } = useAuth();
   
   const navItems = [
-    { path: '/', label: 'Students', icon: Users },
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/students', label: 'Students', icon: Users },
     { path: '/grades', label: 'Grades', icon: BookOpen },
+    { path: '/fees', label: 'Fees', icon: CreditCard },
+    { path: '/students/new', label: 'Add Student', icon: UserPlus },
+    { path: '/reports', label: 'Reports', icon: BarChart3 },
   ];
 
   return (
@@ -37,7 +45,7 @@ function Navigation() {
                 </div>
               </div>
             </div>
-            <div className="ml-10 flex items-baseline space-x-2">
+            <div className="ml-6 flex items-baseline space-x-2 overflow-x-auto custom-scrollbar">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -88,8 +96,12 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<RequireAuth><Layout><Students /></Layout></RequireAuth>} />
+          <Route path="/" element={<RequireAuth><Layout><Dashboard /></Layout></RequireAuth>} />
+          <Route path="/students" element={<RequireAuth><Layout><Students /></Layout></RequireAuth>} />
+          <Route path="/students/new" element={<RequireAuth><Layout><AddStudent /></Layout></RequireAuth>} />
+          <Route path="/fees" element={<RequireAuth><Layout><Fees /></Layout></RequireAuth>} />
           <Route path="/grades" element={<RequireAuth><Layout><Grades /></Layout></RequireAuth>} />
+          <Route path="/reports" element={<RequireAuth><Layout><Reports /></Layout></RequireAuth>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

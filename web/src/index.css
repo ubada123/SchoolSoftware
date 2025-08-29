@@ -95,6 +95,48 @@
     @apply w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/80;
   }
 
+  /* Date input specific styling */
+  input[type="date"] {
+    @apply relative z-10;
+    position: relative;
+    z-index: 10;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer;
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(240deg);
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="date"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit {
+    padding: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-text {
+    padding: 0 2px;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-month-field,
+  input[type="date"]::-webkit-datetime-edit-day-field,
+  input[type="date"]::-webkit-datetime-edit-year-field {
+    padding: 0 2px;
+  }
+
   .form-select {
     @apply form-input;
   }

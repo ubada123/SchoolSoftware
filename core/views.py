@@ -1,10 +1,12 @@
 from rest_framework import viewsets, permissions
-from .models import ClassRoom, Student, Attendance, Grade
+from .models import ClassRoom, Student, Attendance, Grade, FeeStructure, Payment
 from .serializers import (
     ClassRoomSerializer,
     StudentSerializer,
     AttendanceSerializer,
     GradeSerializer,
+    FeeStructureSerializer,
+    PaymentSerializer,
 )
 
 
@@ -36,5 +38,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.select_related('student').all()
     serializer_class = GradeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class FeeStructureViewSet(viewsets.ModelViewSet):
+    queryset = FeeStructure.objects.select_related('classroom').all()
+    serializer_class = FeeStructureSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.select_related('student').all()
+    serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
