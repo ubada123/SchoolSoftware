@@ -10,13 +10,50 @@ export default function Fees() {
   const [students, setStudents] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
+  const [selectedSection, setSelectedSection] = useState('A');
   const [filteredStudents, setFilteredStudents] = useState([]);
   
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
   const [filterClass, setFilterClass] = useState('');
+  const [filterSection, setFilterSection] = useState('');
   const [filteredPayments, setFilteredPayments] = useState([]);
+
+  // Helper function to convert YYYY-MM-DD to DD-MM-YYYY for display
+  const formatDateForDisplay = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      // If in YYYY-MM-DD format, convert to DD-MM-YYYY
+      if (parts[0].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      // If already in DD-MM-YYYY format, return as is
+      if (parts[0].length === 2) return dateStr;
+    }
+    return dateStr;
+  };
+
+  // Helper function to convert DD-MM-YYYY to YYYY-MM-DD for API
+  const formatDateForAPI = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      // If in DD-MM-YYYY format, convert to YYYY-MM-DD
+      if (parts[0].length === 2) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      // If already in YYYY-MM-DD format, return as is
+      if (parts[0].length === 4) return dateStr;
+    }
+    return dateStr;
+  };
+
+  // Get unique classes (without duplicates)
+  const uniqueClasses = classrooms.reduce((acc, classroom) => {
+    const existingClass = acc.find(c => c.name === classroom.name && c.section === classroom.section);
+    if (!existingClass) {
+      acc.push(classroom);
+    }
+    return acc;
+  }, []);
 
   // Payment form
   const [paymentForm, setPaymentForm] = useState({
@@ -61,14 +98,25 @@ export default function Fees() {
 
     // Class filter
     if (filterClass) {
+      const selectedClassroom = uniqueClasses.find(c => c.id === parseInt(filterClass));
+      if (selectedClassroom) {
+        filtered = filtered.filter(payment => {
+          const student = students.find(s => s.id === payment.student);
+          return student && student.classroom_detail && student.classroom_detail.name === selectedClassroom.name;
+        });
+      }
+    }
+
+    // Section filter
+    if (filterSection) {
       filtered = filtered.filter(payment => {
         const student = students.find(s => s.id === payment.student);
-        return student && student.classroom === parseInt(filterClass);
+        return student && student.classroom_detail && student.classroom_detail.section === filterSection;
       });
     }
 
     setFilteredPayments(filtered);
-  }, [payments, searchTerm, filterMonth, filterClass, students]);
+  }, [payments, searchTerm, filterMonth, filterClass, filterSection, students]);
 
   const loadData = async () => {
     try {
@@ -103,6 +151,8 @@ export default function Fees() {
       const calculatedBalance = calculateBalance(paymentForm.total_fee, paymentForm.total_paid);
       const paymentData = {
         ...paymentForm,
+        payment_date: formatDateForAPI(paymentForm.payment_date),
+        due_date: formatDateForAPI(paymentForm.due_date),
         balance: calculatedBalance
       };
       
@@ -112,6 +162,7 @@ export default function Fees() {
       
       // Reset form
       setSelectedClass('');
+      setSelectedSection('A');
       setFilteredStudents([]);
       setPaymentForm({
         student: '',
@@ -153,8 +204,8 @@ export default function Fees() {
         `₹${payment.total_fee || 0}`,
         `₹${payment.total_paid || 0}`,
         `₹${payment.balance || 0}`,
-        payment.payment_date,
-        payment.due_date || '',
+        formatDateForDisplay(payment.payment_date),
+        formatDateForDisplay(payment.due_date) || '',
         payment.is_overdue ? 'OVERDUE' : 'PAID',
         payment.payment_method,
         payment.receipt_number
@@ -175,8 +226,37 @@ export default function Fees() {
     setPaymentForm({...paymentForm, student: ''}); // Reset student selection
     
     if (classId) {
-      const filtered = students.filter(student => student.classroom === parseInt(classId));
-      setFilteredStudents(filtered);
+      const selectedClassroom = uniqueClasses.find(c => c.id === parseInt(classId));
+      if (selectedClassroom) {
+        const filtered = students.filter(student => {
+          const studentClassroom = student.classroom_detail;
+          return studentClassroom && 
+                 studentClassroom.name === selectedClassroom.name && 
+                 studentClassroom.section === selectedSection;
+        });
+        setFilteredStudents(filtered);
+      }
+    } else {
+      setFilteredStudents([]);
+    }
+  };
+
+  // Handle section selection
+  const handleSectionChange = (section) => {
+    setSelectedSection(section);
+    setPaymentForm({...paymentForm, student: ''}); // Reset student selection
+    
+    if (selectedClass) {
+      const selectedClassroom = uniqueClasses.find(c => c.id === parseInt(selectedClass));
+      if (selectedClassroom) {
+        const filtered = students.filter(student => {
+          const studentClassroom = student.classroom_detail;
+          return studentClassroom && 
+                 studentClassroom.name === selectedClassroom.name && 
+                 studentClassroom.section === section;
+        });
+        setFilteredStudents(filtered);
+      }
     } else {
       setFilteredStudents([]);
     }
@@ -187,12 +267,17 @@ export default function Fees() {
     console.log('Editing payment:', payment);
     setEditingPayment(payment);
     
-    // Find the student to get their class
+    // Find the student to get their class and section
     const student = students.find(s => s.id === payment.student);
     console.log('Found student:', student);
-    if (student) {
-      setSelectedClass(student.classroom.toString());
-      const filtered = students.filter(s => s.classroom === student.classroom);
+    if (student && student.classroom_detail) {
+      setSelectedClass(student.classroom_detail.id.toString());
+      setSelectedSection(student.classroom_detail.section || 'A');
+      const filtered = students.filter(s => 
+        s.classroom_detail && 
+        s.classroom_detail.id === student.classroom_detail.id && 
+        s.classroom_detail.section === student.classroom_detail.section
+      );
       setFilteredStudents(filtered);
     }
     
@@ -222,6 +307,8 @@ export default function Fees() {
       const calculatedBalance = calculateBalance(paymentForm.total_fee, paymentForm.total_paid);
       const paymentData = {
         ...paymentForm,
+        payment_date: formatDateForAPI(paymentForm.payment_date),
+        due_date: formatDateForAPI(paymentForm.due_date),
         balance: calculatedBalance
       };
       
@@ -231,6 +318,7 @@ export default function Fees() {
       
       setEditingPayment(null);
       setSelectedClass('');
+      setSelectedSection('A');
       setFilteredStudents([]);
       setPaymentForm({
         student: '',
@@ -369,7 +457,7 @@ export default function Fees() {
         {/* Search and Filter Section */}
         <div className="card">
           <div className="card-body">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* Search */}
               <div>
                 <label className="form-label">Search</label>
@@ -402,11 +490,26 @@ export default function Fees() {
                   className="form-input"
                 >
                   <option value="">All Classes</option>
-                  {classrooms.map(classroom => (
+                  {uniqueClasses.map(classroom => (
                     <option key={classroom.id} value={classroom.id}>
-                      Class {classroom.name}
+                      Class {classroom.name}{classroom.section ? ` - Section ${classroom.section}` : ''}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              {/* Section Filter */}
+              <div>
+                <label className="form-label">Filter by Section</label>
+                <select
+                  value={filterSection}
+                  onChange={(e) => setFilterSection(e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">All Sections</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
                 </select>
               </div>
 
@@ -417,6 +520,7 @@ export default function Fees() {
                     setSearchTerm('');
                     setFilterMonth('');
                     setFilterClass('');
+                    setFilterSection('');
                   }}
                   className="btn-secondary w-full"
                 >
@@ -451,11 +555,26 @@ export default function Fees() {
                   required
                 >
                   <option value="">Select Class</option>
-                  {classrooms.map(classroom => (
+                  {uniqueClasses.map(classroom => (
                     <option key={classroom.id} value={classroom.id}>
-                      Class {classroom.name}
+                      Class {classroom.name}{classroom.section ? ` - Section ${classroom.section}` : ''}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="form-label">Section</label>
+                <select
+                  name="section"
+                  value={selectedSection}
+                  onChange={(e) => handleSectionChange(e.target.value)}
+                  className="form-input"
+                  required
+                >
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
                 </select>
               </div>
 
@@ -549,30 +668,15 @@ export default function Fees() {
               <div>
                 <label className="form-label">Payment Date</label>
                 <input
-                  type="date"
+                  type="text"
                   name="payment_date"
                   value={paymentForm.payment_date}
                   onChange={(e) => setPaymentForm({...paymentForm, payment_date: e.target.value})}
-                  onClick={(e) => {
-                    // Prevent LastPass interference in Chrome
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Force focus and show date picker
-                    const dateInput = e.target;
-                    dateInput.focus();
-                    dateInput.showPicker?.();
-                  }}
                   className="form-input"
+                  placeholder="DD-MM-YYYY"
                   required
-                  style={{ 
-                    position: 'relative', 
-                    zIndex: 10,
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'none',
-                    appearance: 'none'
-                  }}
-                  max={new Date().toISOString().split('T')[0]} // Allow past and current dates
+                  pattern="\d{2}-\d{2}-\d{4}"
+                  title="Please enter date in DD-MM-YYYY format"
                   data-lpignore="true"
                   data-form-type="other"
                   autocomplete="off"
@@ -581,7 +685,7 @@ export default function Fees() {
                 />
                 {paymentForm.payment_date && (
                   <p className="text-sm text-gray-600 mt-1">
-                    Selected: {new Date(paymentForm.payment_date).toLocaleDateString()}
+                    Format: DD-MM-YYYY (e.g., 15-01-2024)
                   </p>
                 )}
               </div>
@@ -589,28 +693,14 @@ export default function Fees() {
               <div>
                 <label className="form-label">Due Date</label>
                 <input
-                  type="date"
+                  type="text"
                   name="due_date"
                   value={paymentForm.due_date}
                   onChange={(e) => setPaymentForm({...paymentForm, due_date: e.target.value})}
-                  onClick={(e) => {
-                    // Prevent LastPass interference in Chrome
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Force focus and show date picker
-                    const dateInput = e.target;
-                    dateInput.focus();
-                    dateInput.showPicker?.();
-                  }}
                   className="form-input"
-                  style={{ 
-                    position: 'relative', 
-                    zIndex: 10,
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'none',
-                    appearance: 'none'
-                  }}
+                  placeholder="DD-MM-YYYY"
+                  pattern="\d{2}-\d{2}-\d{4}"
+                  title="Please enter date in DD-MM-YYYY format"
                   data-lpignore="true"
                   data-form-type="other"
                   autocomplete="off"
@@ -619,7 +709,7 @@ export default function Fees() {
                 />
                 {paymentForm.due_date && (
                   <p className="text-sm text-gray-600 mt-1">
-                    Due: {new Date(paymentForm.due_date).toLocaleDateString()}
+                    Format: DD-MM-YYYY (e.g., 15-01-2024)
                   </p>
                 )}
               </div>
@@ -685,6 +775,7 @@ export default function Fees() {
                     onClick={() => {
                       setEditingPayment(null);
                       setSelectedClass('');
+                      setSelectedSection('A');
                       setFilteredStudents([]);
                       setPaymentForm({
                         student: '',
@@ -751,11 +842,11 @@ export default function Fees() {
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${parseFloat(payment.balance || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
                             ₹{payment.balance || 0}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.payment_date}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDateForDisplay(payment.payment_date)}</td>
                           <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${payment.is_overdue ? 'text-red-600 font-bold' : 'text-gray-900'}`}>
                             {payment.due_date ? (
                               <span className={payment.is_overdue ? 'bg-red-100 px-2 py-1 rounded text-xs' : ''}>
-                                {payment.due_date}
+                                {formatDateForDisplay(payment.due_date)}
                                 {payment.is_overdue && <span className="ml-1">⚠️ OVERDUE</span>}
                               </span>
                             ) : '-'}
