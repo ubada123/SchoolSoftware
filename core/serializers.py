@@ -78,7 +78,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
             'role', 'status', 'is_superuser', 'is_staff', 'date_joined', 
-            'last_login', 'created_by', 'created_by_name', 'notes', 'is_active'
+            'last_login', 'created_by', 'created_by_name', 'notes', 'is_active', 'password'
         ]
         read_only_fields = ['date_joined', 'last_login', 'created_by', 'django_user']
     
