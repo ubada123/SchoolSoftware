@@ -4,8 +4,8 @@ import { GraduationCap, User, Lock, Eye, EyeOff, AlertCircle, Sparkles, Shield }
 
 export default function Login() {
   const { login, loading } = useAuth();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('Admin@12345');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -14,7 +14,10 @@ export default function Login() {
     setError(null);
     const ok = await login(username, password);
     if (!ok) setError('Invalid credentials. Please try again.');
-    else window.location.href = '/';
+    else {
+      // Use React Router navigation instead of window.location
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -34,11 +37,18 @@ export default function Login() {
           <h2 className="mt-8 text-4xl font-extrabold gradient-text">
             School Admin Portal
           </h2>
-          <div className="flex items-center justify-center mt-3">
-            <Sparkles className="h-4 w-4 text-purple-500 mr-2" />
-            <p className="text-sm text-gray-600">Sign in to manage students and grades</p>
-            <Sparkles className="h-4 w-4 text-pink-500 ml-2" />
-          </div>
+                      <div className="flex items-center justify-center mt-3">
+              <Sparkles className="h-4 w-4 text-purple-500 mr-2" />
+              <p className="text-sm text-gray-600">Sign in to manage students and grades</p>
+              <Sparkles className="h-4 w-4 text-pink-500 ml-2" />
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-700 text-center">
+                <strong>Test Credentials:</strong><br/>
+                Username: <code>testuser</code> | Password: <code>test123</code><br/>
+                Username: <code>admin</code> | Password: <code>admin123</code>
+              </p>
+            </div>
         </div>
         
         <form onSubmit={onSubmit} className="mt-8 space-y-6">
