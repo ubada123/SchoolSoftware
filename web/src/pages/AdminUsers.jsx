@@ -164,7 +164,7 @@ export default function AdminUsers() {
             Admin Users
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Manage admin users and their permissions
+            Manage admin users and their permissions. Users created here can log in to the application.
           </p>
         </div>
         <button
@@ -417,6 +417,10 @@ export default function AdminUsers() {
                                                    <div className="text-sm text-gray-500 flex items-center">
                          <Mail className="h-3 w-3 mr-1" />
                          {user.email}
+                       </div>
+                       <div className="text-sm text-gray-500 flex items-center">
+                         <Shield className="h-3 w-3 mr-1" />
+                         {user.is_active ? 'Can Login' : 'Cannot Login'}
                        </div>
                           </div>
                         </div>

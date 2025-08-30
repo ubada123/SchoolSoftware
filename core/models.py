@@ -165,7 +165,6 @@ class AdminUser(models.Model):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    password = models.CharField(max_length=128, blank=True)  # Store hashed password
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='admin')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     is_superuser = models.BooleanField(default=False)
@@ -173,6 +172,7 @@ class AdminUser(models.Model):
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_admin_users')
+    django_user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name='admin_user_profile')
     notes = models.TextField(blank=True)
     
     class Meta:
@@ -190,4 +190,8 @@ class AdminUser(models.Model):
     @property
     def is_active(self):
         return self.status == 'active'
+    
+    def can_login(self):
+        """Check if the admin user can log in based on their status"""
+        return self.status == 'active' and self.django_user and self.django_user.is_active
 

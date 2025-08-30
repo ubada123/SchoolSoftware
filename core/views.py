@@ -55,14 +55,20 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):
-    queryset = AdminUser.objects.select_related('created_by').all()
+    queryset = AdminUser.objects.select_related('created_by', 'django_user').all()
     serializer_class = AdminUserSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
     
     def get_queryset(self):
         # Only super admins can see all admin users
         if self.request.user.is_superuser:
-            return AdminUser.objects.select_related('created_by').all()
+            return AdminUser.objects.select_related('created_by', 'django_user').all()
         # Regular admins can only see users they created
-        return AdminUser.objects.filter(created_by=self.request.user).select_related('created_by')
+        return AdminUser.objects.filter(created_by=self.request.user).select_related('created_by', 'django_user')
+    
+    def perform_destroy(self, instance):
+        # Delete the associated Django User when AdminUser is deleted
+        if instance.django_user:
+            instance.django_user.delete()
+        instance.delete()
 

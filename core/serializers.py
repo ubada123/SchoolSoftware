@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
 from .models import ClassRoom, Student, Attendance, Grade, FeeStructure, Payment, AdminUser
 
 
@@ -77,9 +78,9 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
             'role', 'status', 'is_superuser', 'is_staff', 'date_joined', 
-            'last_login', 'created_by', 'created_by_name', 'notes', 'is_active', 'password'
+            'last_login', 'created_by', 'created_by_name', 'notes', 'is_active'
         ]
-        read_only_fields = ['date_joined', 'last_login', 'created_by']
+        read_only_fields = ['date_joined', 'last_login', 'created_by', 'django_user']
     
     def get_created_by_name(self, obj):
         if obj.created_by:
@@ -90,16 +91,49 @@ class AdminUserSerializer(serializers.ModelSerializer):
         # Set the created_by field to the current user
         validated_data['created_by'] = self.context['request'].user
         
-        # Hash the password if provided
-        if 'password' in validated_data and validated_data['password']:
-            validated_data['password'] = make_password(validated_data['password'])
+        # Extract password for Django User creation
+        password = validated_data.pop('password', None)
         
+        # Create Django User object for authentication
+        if password:
+            django_user = User.objects.create_user(
+                username=validated_data['username'],
+                email=validated_data['email'],
+                password=password,
+                first_name=validated_data['first_name'],
+                last_name=validated_data['last_name'],
+                is_staff=validated_data.get('is_staff', True),
+                is_superuser=validated_data.get('is_superuser', False)
+            )
+            
+            # Set the Django user reference in AdminUser
+            validated_data['django_user'] = django_user
+        
+        # Create AdminUser object
         return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        # Hash the password if provided
-        if 'password' in validated_data and validated_data['password']:
-            validated_data['password'] = make_password(validated_data['password'])
+        # Handle password update
+        password = validated_data.pop('password', None)
+        
+        if password and instance.django_user:
+            # Update Django User password
+            instance.django_user.set_password(password)
+            instance.django_user.save()
+        
+        # Update Django User other fields if they exist
+        if instance.django_user:
+            if 'first_name' in validated_data:
+                instance.django_user.first_name = validated_data['first_name']
+            if 'last_name' in validated_data:
+                instance.django_user.last_name = validated_data['last_name']
+            if 'email' in validated_data:
+                instance.django_user.email = validated_data['email']
+            if 'is_staff' in validated_data:
+                instance.django_user.is_staff = validated_data['is_staff']
+            if 'is_superuser' in validated_data:
+                instance.django_user.is_superuser = validated_data['is_superuser']
+            instance.django_user.save()
         
         return super().update(instance, validated_data)
 
