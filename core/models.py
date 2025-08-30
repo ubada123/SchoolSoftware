@@ -1,10 +1,17 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class ClassRoom(models.Model):
+    SECTION_CHOICES = [
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+    ]
+    
     name = models.CharField(max_length=100)
-    section = models.CharField(max_length=50, blank=True)
+    section = models.CharField(max_length=50, choices=SECTION_CHOICES, default='A')
 
     class Meta:
         unique_together = ('name', 'section')
@@ -21,6 +28,7 @@ class Student(models.Model):
     admission_date = models.DateField(null=True, blank=True)
     roll_number = models.CharField(max_length=50)
     classroom = models.ForeignKey(ClassRoom, on_delete=models.PROTECT, related_name='students')
+    father_name = models.CharField(max_length=200, blank=True)
     guardian_name = models.CharField(max_length=200, blank=True)
     contact_phone = models.CharField(max_length=50, blank=True)
     contact_email = models.EmailField(blank=True)
@@ -138,4 +146,48 @@ class Payment(models.Model):
         if self.due_date and self.balance > 0:
             return self.due_date < timezone.now().date()
         return False
+
+
+class AdminUser(models.Model):
+    ROLE_CHOICES = [
+        ('super_admin', 'Super Admin'),
+        ('admin', 'Admin'),
+        ('staff', 'Staff'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+    ]
+    
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    password = models.CharField(max_length=128, blank=True)  # Store hashed password
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='admin')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    last_login = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_admin_users')
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-date_joined']
+        verbose_name = 'Admin User'
+        verbose_name_plural = 'Admin Users'
+    
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.username})"
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def is_active(self):
+        return self.status == 'active'
 

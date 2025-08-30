@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import ClassRoom, Student, Attendance, Grade, FeeStructure, Payment
+from django.contrib.auth.hashers import make_password
+from .models import ClassRoom, Student, Attendance, Grade, FeeStructure, Payment, AdminUser
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):
@@ -15,7 +16,7 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = [
             'id', 'first_name', 'last_name', 'date_of_birth', 'admission_date', 'roll_number',
-            'classroom', 'classroom_detail', 'guardian_name', 'contact_phone',
+            'classroom', 'classroom_detail', 'father_name', 'guardian_name', 'contact_phone',
             'contact_email', 'address', 'created_at', 'updated_at'
         ]
 
@@ -63,5 +64,43 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     def get_student_full_name(self, obj):
         return f"{obj.student.first_name} {obj.student.last_name}"
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.SerializerMethodField()
+    full_name = serializers.ReadOnlyField()
+    is_active = serializers.ReadOnlyField()
+    password = serializers.CharField(write_only=True, required=True, min_length=6)
+    
+    class Meta:
+        model = AdminUser
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
+            'role', 'status', 'is_superuser', 'is_staff', 'date_joined', 
+            'last_login', 'created_by', 'created_by_name', 'notes', 'is_active', 'password'
+        ]
+        read_only_fields = ['date_joined', 'last_login', 'created_by']
+    
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return f"{obj.created_by.first_name} {obj.created_by.last_name}".strip() or obj.created_by.username
+        return "System"
+    
+    def create(self, validated_data):
+        # Set the created_by field to the current user
+        validated_data['created_by'] = self.context['request'].user
+        
+        # Hash the password if provided
+        if 'password' in validated_data and validated_data['password']:
+            validated_data['password'] = make_password(validated_data['password'])
+        
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        # Hash the password if provided
+        if 'password' in validated_data and validated_data['password']:
+            validated_data['password'] = make_password(validated_data['password'])
+        
+        return super().update(instance, validated_data)
 
 

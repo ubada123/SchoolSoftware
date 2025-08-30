@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions
-from .models import ClassRoom, Student, Attendance, Grade, FeeStructure, Payment
+from .models import ClassRoom, Student, Attendance, Grade, FeeStructure, Payment, AdminUser
 from .serializers import (
     ClassRoomSerializer,
     StudentSerializer,
@@ -7,6 +7,7 @@ from .serializers import (
     GradeSerializer,
     FeeStructureSerializer,
     PaymentSerializer,
+    AdminUserSerializer,
 )
 
 
@@ -51,4 +52,17 @@ class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.select_related('student').all()
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    queryset = AdminUser.objects.select_related('created_by').all()
+    serializer_class = AdminUserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+    
+    def get_queryset(self):
+        # Only super admins can see all admin users
+        if self.request.user.is_superuser:
+            return AdminUser.objects.select_related('created_by').all()
+        # Regular admins can only see users they created
+        return AdminUser.objects.filter(created_by=self.request.user).select_related('created_by')
 

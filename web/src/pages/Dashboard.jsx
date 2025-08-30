@@ -1,7 +1,20 @@
 import { Link } from 'react-router-dom';
-import { GraduationCap, UserPlus, BarChart3, CreditCard, AlertTriangle, Clock } from 'lucide-react';
+import { GraduationCap, UserPlus, BarChart3, CreditCard, AlertTriangle, Clock, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../api/client';
+
+// Helper function to convert YYYY-MM-DD to DD-MM-YYYY for display
+const formatDateForDisplay = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    // If in YYYY-MM-DD format, convert to DD-MM-YYYY
+    if (parts[0].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    // If already in DD-MM-YYYY format, return as is
+    if (parts[0].length === 2) return dateStr;
+  }
+  return dateStr;
+};
 
 export default function Dashboard() {
   const [overduePayments, setOverduePayments] = useState([]);
@@ -57,7 +70,7 @@ export default function Dashboard() {
                   <div>
                     <p className="font-medium text-gray-900">{payment.student_full_name}</p>
                     <p className="text-sm text-gray-600">
-                      {payment.fee_type} - Due: {payment.due_date}
+                      {payment.fee_type} - Due: {formatDateForDisplay(payment.due_date)}
                     </p>
                   </div>
                   <div className="text-right">
@@ -114,6 +127,20 @@ export default function Dashboard() {
               </div>
               <div className="h-12 w-12 rounded-xl gradient-bg flex items-center justify-center text-white">
                 <BarChart3 className="h-6 w-6" />
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        <Link to="/admin-users" className="card hover-lift hover-glow">
+          <div className="card-body">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-900">Admin Users</h3>
+                <p className="mt-2 text-sm text-gray-600">Manage admin users, roles, and permissions for system access.</p>
+              </div>
+              <div className="h-12 w-12 rounded-xl gradient-bg flex items-center justify-center text-white">
+                <Shield className="h-6 w-6" />
               </div>
             </div>
           </div>

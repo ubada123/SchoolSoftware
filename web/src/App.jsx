@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
-import { GraduationCap, Users, BookOpen, LogOut, Sparkles, LayoutDashboard, UserPlus, BarChart3, CreditCard } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, LogOut, Sparkles, LayoutDashboard, UserPlus, BarChart3, CreditCard, Shield } from 'lucide-react';
 import Login from './pages/Login.jsx';
 import Students from './pages/Students.jsx';
 import Grades from './pages/Grades.jsx';
@@ -8,10 +8,53 @@ import Dashboard from './pages/Dashboard.jsx';
 import AddStudent from './pages/AddStudent.jsx';
 import Reports from './pages/Reports.jsx';
 import Fees from './pages/Fees.jsx';
+import AdminUsers from './pages/AdminUsers.jsx';
 
 function RequireAuth({ children }) {
-  const { accessToken } = useAuth();
-  if (!accessToken) return <Navigate to="/login" replace />;
+  const { accessToken, loading } = useAuth();
+  console.log('RequireAuth check:', { accessToken: !!accessToken, tokenLength: accessToken?.length, loading });
+  
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!accessToken) {
+    console.log('No access token, redirecting to login');
+    return <Navigate to="/login" replace />;
+  }
+  console.log('Access token present, rendering protected content');
+  return children;
+}
+
+function RequireNoAuth({ children }) {
+  const { accessToken, loading } = useAuth();
+  console.log('RequireNoAuth check:', { accessToken: !!accessToken, tokenLength: accessToken?.length, loading });
+  
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (accessToken) {
+    console.log('User already authenticated, redirecting to dashboard');
+    return <Navigate to="/" replace />;
+  }
+  console.log('User not authenticated, showing login page');
   return children;
 }
 
@@ -26,6 +69,7 @@ function Navigation() {
     { path: '/fees', label: 'Fees', icon: CreditCard },
     { path: '/students/new', label: 'Add Student', icon: UserPlus },
     { path: '/reports', label: 'Reports', icon: BarChart3 },
+    { path: '/admin-users', label: 'Admin Users', icon: Shield },
   ];
 
   return (
@@ -95,13 +139,16 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<RequireNoAuth><Login /></RequireNoAuth>} />
           <Route path="/" element={<RequireAuth><Layout><Dashboard /></Layout></RequireAuth>} />
           <Route path="/students" element={<RequireAuth><Layout><Students /></Layout></RequireAuth>} />
           <Route path="/students/new" element={<RequireAuth><Layout><AddStudent /></Layout></RequireAuth>} />
           <Route path="/fees" element={<RequireAuth><Layout><Fees /></Layout></RequireAuth>} />
           <Route path="/grades" element={<RequireAuth><Layout><Grades /></Layout></RequireAuth>} />
           <Route path="/reports" element={<RequireAuth><Layout><Reports /></Layout></RequireAuth>} />
+          <Route path="/admin-users" element={<RequireAuth><Layout><AdminUsers /></Layout></RequireAuth>} />
+          {/* Catch all other routes and redirect to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
